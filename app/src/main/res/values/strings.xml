@@ -1,0 +1,15 @@
+<resources>
+    <!-- Titulky aktivit -->
+    <string name="app_name">File Explorer</string>
+
+    <!-- Popisky akcnych tlacidiel -->
+    <string name="action_settings">Nastavenia</string>
+    <string name="action_refresh">Obnoviť</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="nacitavanie_obsahu">Prebieha načítavanie obsahu...</string>
+
+
+</resources>
+
