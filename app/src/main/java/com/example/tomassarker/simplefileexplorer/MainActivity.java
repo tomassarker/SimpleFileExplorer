@@ -13,6 +13,8 @@ import android.view.MenuItem;
 
 public class MainActivity extends AppCompatActivity {
 
+    private Fragment progressBarFragment;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,8 +23,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         //Na zaciatok zobrazime fragment s progress barom
-
-        Fragment progressBarFragment = ProgressBarFragment.newInstance();
+        progressBarFragment = ProgressBarFragment.newInstance();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.MainActivity_FrameLayout, progressBarFragment);
         transaction.commit();
@@ -45,6 +46,9 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            return true;
+        }
+        if (id == R.id.action_refresh) {
             return true;
         }
 
