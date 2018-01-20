@@ -23,6 +23,9 @@ import java.io.File;
 
 
 /**
+ * Fragment, ktory zobrazi obsah vybranej zlozky.<br/>
+ * V metode {@link FileViewFragment#newInstance} je potrebne vlozit zlozku typu File.<br/>
+ *
  * A simple {@link Fragment} subclass.
  * Activities that contain this fragment must implement the
  * {@link FileViewFragment.OnFragmentInteractionListener} interface
@@ -32,8 +35,9 @@ import java.io.File;
  */
 public class FileViewFragment extends Fragment {
 
+    //konstanta vyuziter pri savedInstanceState
     private static final String STRING_ARRAY = "array";
-    private static final String ARG_FILES = "files";
+    //zlozka na zobrazenie
     private File[] files;
 
     private View view;
@@ -61,6 +65,8 @@ public class FileViewFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //obnovenie dat zo savedInstanceState
         if (savedInstanceState != null && files == null) {
             String nazvySuborov[] = savedInstanceState.getStringArray(STRING_ARRAY);
             files = new File[nazvySuborov.length];
@@ -69,6 +75,7 @@ public class FileViewFragment extends Fragment {
             }
         }
 
+        //praca s argumentmi - v nasom pripade nerobime nic
         if (getArguments() != null) {
 
         }
@@ -80,7 +87,8 @@ public class FileViewFragment extends Fragment {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_file_view, container, false);
 
-        AbsListView viewContainer = view.findViewById(R.id.fileViewContainer);
+        //nastavime ListView/GridView
+        AbsListView viewContainer = view.findViewById(R.id.fileViewContainer); //Premenna moze obsahovat bud ListView alebo GridView - s obomi sa pracuje rovnako
         viewContainer.setAdapter(new FileListAdapter(getContext(), files));
         viewContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -92,10 +100,12 @@ public class FileViewFragment extends Fragment {
         return view;
     }
 
+
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
 
+        //pre jednoduchost ulozime len pole suborov skonvertovane na String[]
         String nazvySuborov[] = new String[files.length];
         for (int i = 0; i < files.length; i++) {
             nazvySuborov[i] = files[i].toString();
@@ -103,8 +113,13 @@ public class FileViewFragment extends Fragment {
         outState.putStringArray(STRING_ARRAY, nazvySuborov);
     }
 
+    /**
+     * Vola sa, ak uzivatel klikne na subor/zlozku
+     * @param file
+     */
     public void onItemClicked(File file) {
         if (mListener != null) {
+            //implementovane v nadriadenej triede
             mListener.onFragmentInteractionFileSelected(file);
         }
     }
@@ -141,6 +156,9 @@ public class FileViewFragment extends Fragment {
     }
 
 
+    /**
+     * Adapter na pracu s GridView/ListView
+     */
     private class FileListAdapter extends ArrayAdapter<File> {
 
         public FileListAdapter(@NonNull Context context, File files[]) {
@@ -160,7 +178,6 @@ public class FileViewFragment extends Fragment {
             TextView tvName = (TextView) convertView.findViewById(R.id.textView_fileName);
             // Populate the data into the template view using the data object
             tvName.setText(file.getName());
-            //TODO: rozlisenie medzi zlozkami a subormi
             ImageView imageView = convertView.findViewById(R.id.fileView_imageView);
             if (file.isFile()) {
                 imageView.setImageResource(R.drawable.file);

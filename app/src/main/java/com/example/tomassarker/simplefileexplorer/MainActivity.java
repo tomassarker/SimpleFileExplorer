@@ -38,8 +38,11 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements FileViewFragment.OnFragmentInteractionListener {
 
+    //fragment, ktory sa zobrazi pocas nacitavania zlozky samostatnym vlaknom
     private Fragment progressBarFragment;
+    //boolean - pravo zapisovat - nevyhnutne
     private boolean canAccesStorage;
+    //aktualne zobrazovana zlozka
     private File showedDirectory;
 
 
@@ -103,6 +106,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            //TODO: zobrazenie nastaveni
             return true;
         }
         if (id == R.id.action_refresh) {
@@ -117,8 +121,10 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         return super.onOptionsItemSelected(item);
     }
 
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        //reakcia na uzivatelove povolenie/zamietnutie pozadovanych povoleni
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED) {
             try {
                 showPath();
@@ -131,6 +137,10 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         }
     }
 
+    /**
+     * Zobrazi zlozku ulozenu v globalnej premennej {@link this#showedDirectory}
+     * @throws InterruptedException
+     */
     private void showPath() throws InterruptedException {
         //TODO
         Log.d("showPath",showedDirectory.toString());
@@ -168,8 +178,12 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         return true;
     }
 
+    /**
+     * Vola sa, ak uzivatel stlaci sipku spat - zobrazi horny priecinok alebo ukonci appku
+     */
     private void navigateUp() {
         if (showedDirectory == null) {
+            //ak uz horny priecinok neexistuje, ukoncime appku
             finish();
         } else {
             showedDirectory = showedDirectory.getParentFile();
@@ -195,7 +209,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
             }
         }
         else if (file.isFile()) {
-            //TODO:
+            //TODO: otvorenie suboru
             Uri uri = Uri.fromFile(file);
             String mime = getContentResolver().getType(uri);
 
@@ -221,17 +235,20 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         }
     }
 
+    /**
+     * Trieda sluzi na nacitanie obsahu zlozku pomocou samostatneho vlakna
+     */
     private class PathReader implements Runnable {
 
         Thread thread;
         File path;
+        //sluzi ako vystup - utriedeny zoznam priecinkov a suborov
         File pathContent[];
 
         public PathReader(File path) {
             this.path = path;
             thread = new Thread( this, "PathReader-" + path.toString() );
             thread.start();
-//            thread.run();
         }
 
         /**
@@ -275,6 +292,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
             for (int i = 0; i < filesCount; i++) {
                 pathContent[i + foldersCount] = files[i];
             }
+
         }
 
     }

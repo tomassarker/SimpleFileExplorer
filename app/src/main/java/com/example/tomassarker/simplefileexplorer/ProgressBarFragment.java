@@ -9,6 +9,8 @@ import android.view.ViewGroup;
 
 
 /**
+ * Zobrazi progress bar s informaciou, ze obsah sa stale nacitava..
+ *
  * A simple {@link Fragment} subclass.
  * Use the {@link ProgressBarFragment#newInstance} factory method to
  * create an instance of this fragment.
