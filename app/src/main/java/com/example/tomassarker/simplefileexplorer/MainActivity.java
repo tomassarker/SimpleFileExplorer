@@ -136,9 +136,11 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         Log.d("showPath",showedDirectory.toString());
 
         //najprv zobrazime progress bar
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.MainActivity_FrameLayout, progressBarFragment);
-        transaction.commit();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.MainActivity_FrameLayout, progressBarFragment)
+                //.addToBackStack(null)
+                .commit();
 
         //nacitame obsah zelaneho priecinku a pockame na vysledok
         PathReader pathReader = new PathReader(showedDirectory);
@@ -146,16 +148,39 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
 
         //zobrazime obsah priecinka
         FileViewFragment fileViewFragment = FileViewFragment.newInstance(pathReader.pathContent);
-        transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.MainActivity_FrameLayout, fileViewFragment);
-//        transaction.addToBackStack(null);
-        transaction.commit();
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.MainActivity_FrameLayout, fileViewFragment)
+                .commit();
 
-        //docasne riesenie - vypis
-//        for (int i = 0; i<pathReader.pathContent.length; i++) {
-//            File f = pathReader.pathContent[i];
-//            Toast.makeText(this, f.getName(), Toast.LENGTH_SHORT).show();
-//        }
+    }
+
+    @Override
+    public void onBackPressed() {
+//        super.onBackPressed();
+        navigateUp();
+    }
+
+    @Override
+    public boolean onSupportNavigateUp() {
+//        return super.onSupportNavigateUp();
+        navigateUp();
+        return true;
+    }
+
+    private void navigateUp() {
+        if (showedDirectory == null) {
+            finish();
+        } else {
+            showedDirectory = showedDirectory.getParentFile();
+        }
+
+        try {
+            if (showedDirectory != null)
+                showPath();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     //akcia sa vyvola pri stlaceni polozky vo fragmente so subormi
@@ -232,16 +257,23 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
             };
 
             //ziskame zoznam priecinkov a suborov zvlast a nasledne ich utriedime a spojime
+            int filesCount = 0, foldersCount = 0;
             File folders[] = path.listFiles(isDirectory);
             File files[] = path.listFiles(isFile);
-            Arrays.sort(folders);
-            Arrays.sort(files);
-            pathContent = new File[folders.length + files.length];
-            for (int i = 0; i < folders.length; i++) {
+            if (folders != null) {
+                Arrays.sort(folders);
+                foldersCount = folders.length;
+            }
+            if (files != null) {
+                Arrays.sort(files);
+                filesCount = files.length;
+            }
+            pathContent = new File[foldersCount + filesCount];
+            for (int i = 0; i < foldersCount; i++) {
                 pathContent[i] = folders[i];
             }
-            for (int i = 0; i < files.length; i++) {
-                pathContent[i + folders.length] = files[i];
+            for (int i = 0; i < filesCount; i++) {
+                pathContent[i + foldersCount] = files[i];
             }
         }
 
