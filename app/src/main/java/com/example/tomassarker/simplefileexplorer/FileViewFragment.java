@@ -30,8 +30,8 @@ import java.io.File;
  * create an instance of this fragment.
  */
 public class FileViewFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
+
+    private static final String STRING_ARRAY = "array";
     private static final String ARG_FILES = "files";
     private File[] files;
 
@@ -60,6 +60,14 @@ public class FileViewFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (savedInstanceState != null && files == null) {
+            String nazvySuborov[] = savedInstanceState.getStringArray(STRING_ARRAY);
+            files = new File[nazvySuborov.length];
+            for (int i = 0; i < nazvySuborov.length; i++) {
+                files[i] = new File(nazvySuborov[i]);
+            }
+        }
+
         if (getArguments() != null) {
 
         }
@@ -81,6 +89,17 @@ public class FileViewFragment extends Fragment {
         });
 
         return view;
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        String nazvySuborov[] = new String[files.length];
+        for (int i = 0; i < files.length; i++) {
+            nazvySuborov[i] = files[i].toString();
+        }
+        outState.putStringArray(STRING_ARRAY, nazvySuborov);
     }
 
     public void onItemClicked(File file) {
