@@ -1,12 +1,24 @@
 package com.example.tomassarker.simplefileexplorer;
 
 import android.content.Context;
+import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AbsListView;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.GridView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+
+import java.io.File;
 
 
 /**
@@ -20,13 +32,10 @@ import android.view.ViewGroup;
 public class FileViewFragment extends Fragment {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private static final String ARG_FILES = "files";
+    private File[] files;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
+    private View view;
     private OnFragmentInteractionListener mListener;
 
     public FileViewFragment() {
@@ -37,17 +46,14 @@ public class FileViewFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
+     * @param files Parameter 1.
      * @return A new instance of fragment FileViewFragment.
      */
-    // TODO: Rename and change types and number of parameters
-    public static FileViewFragment newInstance(String param1, String param2) {
+    public static FileViewFragment newInstance(File files[]) {
         FileViewFragment fragment = new FileViewFragment();
         Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
         fragment.setArguments(args);
+        fragment.files = files;
         return fragment;
     }
 
@@ -55,8 +61,7 @@ public class FileViewFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+
         }
     }
 
@@ -64,13 +69,23 @@ public class FileViewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_file_view, container, false);
+        view = inflater.inflate(R.layout.fragment_file_view, container, false);
+
+        AbsListView viewContainer = view.findViewById(R.id.fileViewContainer);
+        viewContainer.setAdapter(new FileListAdapter(getContext(), files));
+        viewContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                onItemClicked(files[position]);
+            }
+        });
+
+        return view;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
+    public void onItemClicked(File file) {
         if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+            mListener.onFragmentInteractionFileSelected(file);
         }
     }
 
@@ -102,7 +117,34 @@ public class FileViewFragment extends Fragment {
      * >Communicating with Other Fragments</a> for more information.
      */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        void onFragmentInteractionFileSelected(File file);
     }
+
+
+    private class FileListAdapter extends ArrayAdapter<File> {
+
+        public FileListAdapter(@NonNull Context context, File files[]) {
+            super(context, 0, files);
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            // Get the data item for this position
+            File file = getItem(position);
+            // Check if an existing view is being reused, otherwise inflate the view
+            if (convertView == null) {
+                convertView = LayoutInflater.from(getContext()).inflate(R.layout.single_file_layout, parent, false);
+            }
+            // Lookup view for data population
+            TextView tvName = (TextView) convertView.findViewById(R.id.textView_fileName);
+            // Populate the data into the template view using the data object
+            tvName.setText(file.getName());
+            //TODO: rozlisenie medzi zlozkami a subormi
+            // Return the completed view to render on screen
+            return convertView;
+        }
+    }
+
+
 }

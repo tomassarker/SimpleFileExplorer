@@ -1,9 +1,12 @@
 package com.example.tomassarker.simplefileexplorer;
 
 import android.Manifest;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Environment;
+import android.preference.PreferenceManager;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -12,19 +15,27 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
 import java.io.File;
+import java.io.FileFilter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements FileViewFragment.OnFragmentInteractionListener {
 
     private Fragment progressBarFragment;
-    private File showedDirectory;
     private boolean canAccesStorage;
+    private File showedDirectory;
+
+
     //request kody pre povolenia
     static public final HashMap<String, Integer> permissions = new HashMap<String, Integer>(){};
     static {
@@ -47,14 +58,21 @@ public class MainActivity extends AppCompatActivity {
 
         //nacitame predvoleny adresar
         //TODO: nacitanie z preferences
-        showedDirectory = Environment.getExternalStorageDirectory();
+        //showedDirectory = Environment.getExternalStorageDirectory();
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        String path = sharedPreferences.getString( "list_preference_1", Environment.getExternalStorageDirectory().toString() );
+        showedDirectory = new File(path);
 
         //overime opravnenie citat/zapisovat ulozisko
         canAccesStorage = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         if (!canAccesStorage) {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         } else {
-            showPath();
+            try {
+                showPath();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         }
 
     }
@@ -78,7 +96,11 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         if (id == R.id.action_refresh) {
-            showPath();
+            try {
+                showPath();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             return true;
         }
 
@@ -88,20 +110,98 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED) {
-            showPath();
+            try {
+                showPath();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         } else {
             Snackbar.make(findViewById(android.R.id.content), "appka nebude fungovat..", 1500).show();
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         }
     }
 
-    private void showPath() {
+    private void showPath() throws InterruptedException {
         //TODO
-        for (String f: showedDirectory.list()
-                ) {
-            Toast.makeText(this, f, Toast.LENGTH_SHORT).show();
-//            Snackbar.make(findViewById(android.R.id.content), f, 1500).show();
+        Log.d("showPath",showedDirectory.toString());
+
+        //najprv zobrazime progress bar
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.MainActivity_FrameLayout, progressBarFragment);
+        transaction.commit();
+
+        //nacitame obsah zelaneho priecinku a pockame na vysledok
+        PathReader pathReader = new PathReader(showedDirectory);
+        pathReader.thread.join();
+
+        //zobrazime obsah priecinka
+        FileViewFragment fileViewFragment = FileViewFragment.newInstance(pathReader.pathContent);
+        transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.MainActivity_FrameLayout, fileViewFragment);
+        transaction.commit();
+
+        //docasne riesenie - vypis
+//        for (int i = 0; i<pathReader.pathContent.length; i++) {
+//            File f = pathReader.pathContent[i];
+//            Toast.makeText(this, f.getName(), Toast.LENGTH_SHORT).show();
+//        }
+    }
+
+    //akcia sa vyvola pri stlaceni polozky vo fragmente so subormi
+    @Override
+    public void onFragmentInteractionFileSelected(File file) {
+
+    }
+
+    private class PathReader implements Runnable {
+
+        Thread thread;
+        File path;
+        File pathContent[];
+
+        public PathReader(File path) {
+            this.path = path;
+            thread = new Thread( this, "PathReader-" + path.toString() );
+            thread.start();
+//            thread.run();
         }
+
+        /**
+         * Metoda nacita obsah priecinku a zoradi ho... pouzite rozdelenie dvoch poli - jednoduchsie ako implementacia komparatorom
+         */
+        @Override
+        public void run() {
+            Log.d(thread.getName(), "run");
+
+            //Filter, ktory vyfiltruje len priecinky
+            FileFilter isDirectory = new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return pathname.isDirectory();
+                }
+            };
+            //Filter, ktory vyfiltruje len subory
+            FileFilter isFile = new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return pathname.isFile();
+                }
+            };
+
+            //ziskame zoznam priecinkov a suborov zvlast a nasledne ich utriedime a spojime
+            File folders[] = path.listFiles(isDirectory);
+            File files[] = path.listFiles(isFile);
+            Arrays.sort(folders);
+            Arrays.sort(files);
+            pathContent = new File[folders.length + files.length];
+            for (int i = 0; i < folders.length; i++) {
+                pathContent[i] = folders[i];
+            }
+            for (int i = 0; i < files.length; i++) {
+                pathContent[i + folders.length] = files[i];
+            }
+        }
+
     }
 
 }
