@@ -5,13 +5,15 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <ImageButton
-        android:id="@+id/imageButton"
+    <ImageView
+        android:id="@+id/fileView_imageView"
         android:layout_width="60dp"
         android:layout_height="60dp"
+        android:layout_marginEnd="8dp"
         android:layout_marginTop="8dp"
         android:scaleType="fitXY"
         android:tooltipText="sdrfgdrg"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@mipmap/ic_launcher_round" />
@@ -24,9 +26,9 @@
         android:maxLines="1"
         android:text="TextView"
         android:textAlignment="center"
-        app:layout_constraintEnd_toEndOf="@+id/imageButton"
+        app:layout_constraintEnd_toEndOf="@+id/fileView_imageView"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintStart_toStartOf="@+id/imageButton"
-        app:layout_constraintTop_toBottomOf="@+id/imageButton" />
+        app:layout_constraintStart_toStartOf="@+id/fileView_imageView"
+        app:layout_constraintTop_toBottomOf="@+id/fileView_imageView" />
 
 </android.support.constraint.ConstraintLayout>

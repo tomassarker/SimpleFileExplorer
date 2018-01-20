@@ -14,6 +14,7 @@ import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -160,9 +161,21 @@ public class FileViewFragment extends Fragment {
             // Populate the data into the template view using the data object
             tvName.setText(file.getName());
             //TODO: rozlisenie medzi zlozkami a subormi
+            ImageView imageView = convertView.findViewById(R.id.fileView_imageView);
+            if (file.isFile()) {
+                imageView.setImageResource(R.drawable.file);
+//                imageView.setImageDrawable(getResources().getDrawable(R.drawable.file, null));
+            }
+            if (file.isDirectory()) {
+//                imageView.setImageDrawable(getResources().getDrawable(R.drawable.folder, null));
+                imageView.setImageResource(R.drawable.folder);
+            }
+
             // Return the completed view to render on screen
             return convertView;
         }
+
+
     }
 
 
