@@ -56,6 +56,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         //Na zaciatok zobrazime fragment s progress barom
         progressBarFragment = ProgressBarFragment.newInstance();
