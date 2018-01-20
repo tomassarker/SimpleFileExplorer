@@ -1,8 +1,11 @@
 package com.example.tomassarker.simplefileexplorer;
 
 import android.Manifest;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.preference.PreferenceManager;
@@ -13,16 +16,19 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -138,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         FileViewFragment fileViewFragment = FileViewFragment.newInstance(pathReader.pathContent);
         transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.MainActivity_FrameLayout, fileViewFragment);
+//        transaction.addToBackStack(null);
         transaction.commit();
 
         //docasne riesenie - vypis
@@ -150,7 +157,39 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
     //akcia sa vyvola pri stlaceni polozky vo fragmente so subormi
     @Override
     public void onFragmentInteractionFileSelected(File file) {
+        if (file.isDirectory()) {
+            showedDirectory = file;
+            try {
+                showPath();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        else if (file.isFile()) {
+            //TODO:
+            Uri uri = Uri.fromFile(file);
+            String mime = getContentResolver().getType(uri);
 
+            Intent openFileIntent = new Intent();
+//            openFileIntent.setAction(Intent.ACTION_VIEW);
+//            openFileIntent.setDataAndType(uri, mime);
+//            openFileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//            startActivity(openFileIntent);
+
+            openFileIntent.setData(uri);
+            //openFileIntent.setAction(android.content.Intent.ACTION_VIEW);
+
+
+//            String extension[] = file.toString().split(".");
+//            String ex = extension[extension.length-1];
+//
+
+//            String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ex);
+
+            openFileIntent.setType("file/?");
+
+            startActivity(openFileIntent);
+        }
     }
 
     private class PathReader implements Runnable {
