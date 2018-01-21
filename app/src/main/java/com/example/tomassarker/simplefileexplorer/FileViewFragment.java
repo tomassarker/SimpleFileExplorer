@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,6 +25,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import java.io.File;
+import java.util.ArrayList;
 
 
 /**
@@ -48,6 +50,7 @@ public class FileViewFragment extends Fragment {
     private View view;
     private AbsListView viewContainer;
     private OnFragmentInteractionListener mListener;
+    private AbsListView.MultiChoiceModeListener multiChoiceModeListener;
 
     public FileViewFragment() {
         // Required empty public constructor
@@ -104,15 +107,13 @@ public class FileViewFragment extends Fragment {
         });
 
         //nastavime CAB
-        viewContainer.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
-        viewContainer.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+        multiChoiceModeListener = new AbsListView.MultiChoiceModeListener() {
             @Override
             public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
                 // Here you can do something when items are selected/de-selected,
                 // such as update the title in the CAB
 
                 //vynutime zmenu layoutu
-                //TODO
                 viewContainer.getAdapter().getView(position, null, null);
                 viewContainer.invalidateViews();
 
@@ -125,6 +126,7 @@ public class FileViewFragment extends Fragment {
                 // Inflate the menu for the CAB
                 MenuInflater inflater = mode.getMenuInflater();
                 inflater.inflate(R.menu.context_delete_files, menu);
+
                 return true;
             }
 
@@ -154,7 +156,9 @@ public class FileViewFragment extends Fragment {
                 // Here you can make any necessary updates to the activity when
                 // the CAB is removed. By default, selected items are deselected/unchecked.
             }
-        });
+        };
+        viewContainer.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        viewContainer.setMultiChoiceModeListener(multiChoiceModeListener);
 
         return view;
     }
@@ -201,7 +205,28 @@ public class FileViewFragment extends Fragment {
     }
 
     private void deleteSelectedItems() {
+        //pozhrname pozadovane data
+        boolean[] delete = new boolean[files.length];
+        for (int i = 0; i < files.length; i++) { delete[i]=(viewContainer.isItemChecked(i))?true:false; }
+        File[] newFiles = new File[files.length - viewContainer.getCheckedItemCount()];
 
+        //vyjmazeme adapter, aby sa nepokusal robit s neexistujucimi datami
+        viewContainer.setAdapter(null);
+
+        //vymazeme pozadovane data a nevymnazane subory ulozimie do noveho pole
+        int zachovaneSubory = 0;
+        for (int i = 0; i < files.length; i++) {
+            if (delete[i]) {
+                files[i].delete();
+            } else {
+                newFiles[zachovaneSubory++] = files[i];
+            }
+        }
+
+        //opatovne nastavenie Grid/ListView
+        files = newFiles;
+        viewContainer.setAdapter( new FileListAdapter(getContext(), files) );
+        viewContainer.setMultiChoiceModeListener(multiChoiceModeListener);
     }
 
     /**
