@@ -17,6 +17,7 @@ import android.view.ViewGroup;
  */
 public class SettingsFragment extends PreferenceFragment {
 
+    private String currentPath;
 
     public SettingsFragment() {
         // Required empty public constructor
@@ -29,9 +30,11 @@ public class SettingsFragment extends PreferenceFragment {
      * @return A new instance of fragment SettingsFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static SettingsFragment newInstance() {
+    public static SettingsFragment newInstance(String currentPath) {
         SettingsFragment fragment = new SettingsFragment();
+
         Bundle args = new Bundle();
+        args.putString(SettingsActivity.CURRENT_PATH, currentPath);
         fragment.setArguments(args);
         return fragment;
     }
@@ -43,7 +46,7 @@ public class SettingsFragment extends PreferenceFragment {
         addPreferencesFromResource(R.xml.preferences);
 
         if (getArguments() != null) {
-
+            currentPath = getArguments().getString(SettingsActivity.CURRENT_PATH);
         }
     }
 

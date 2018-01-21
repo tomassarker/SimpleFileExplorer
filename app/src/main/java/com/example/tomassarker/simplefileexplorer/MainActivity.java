@@ -124,6 +124,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             Intent intent = new Intent(this, SettingsActivity.class);
+            intent.putExtra(SettingsActivity.CURRENT_PATH, showedDirectory.toString());
             startActivity(intent);
             return true;
         }
@@ -166,9 +167,12 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         //najprv zobrazime progress bar
         getSupportFragmentManager()
                 .beginTransaction()
+                .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 .replace(R.id.MainActivity_FrameLayout, progressBarFragment)
                 //.addToBackStack(null)
                 .commit();
+
+        //
 
         //nacitame obsah zelaneho priecinku a pockame na vysledok
         PathReader pathReader = new PathReader(showedDirectory);
@@ -178,6 +182,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         FileViewFragment fileViewFragment = FileViewFragment.newInstance(pathReader.pathContent);
         getSupportFragmentManager()
                 .beginTransaction()
+                .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 .replace(R.id.MainActivity_FrameLayout, fileViewFragment)
                 .commit();
 
