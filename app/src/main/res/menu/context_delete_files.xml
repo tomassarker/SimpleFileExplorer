@@ -9,7 +9,8 @@
         android:title="delete"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/menu_"
-        android:title="Item"
+        android:id="@+id/menu_selectAll"
+        android:icon="?attr/actionModeSelectAllDrawable"
+        android:title="select @android:string/selectAll"
         app:showAsAction="ifRoom" />
 </menu>

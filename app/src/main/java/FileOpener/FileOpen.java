@@ -8,7 +8,7 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Downloaded from http://www.androidsnippets.com/open-any-type-of-file-with-default-intent.html
+ * Downloaded from <a href = "http://www.androidsnippets.com/open-any-type-of-file-with-default-intent.html" >Androidsnippset</a>
  */
 
 public class FileOpen {

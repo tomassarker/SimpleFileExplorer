@@ -145,6 +145,11 @@ public class FileViewFragment extends Fragment {
                         deleteSelectedItems();
                         mode.finish(); // Action picked, so close the CAB
                         return true;
+                    case R.id.menu_selectAll:
+                        for (int i = 0; i < files.length; i++) {
+                            viewContainer.setItemChecked(i, true);
+                        }
+                        return true;
                     default:
                         return false;
                 }
