@@ -5,5 +5,6 @@
         android:key="edit_text_preference_1"
         android:selectAllOnFocus="true"
         android:singleLine="true"
-        android:title="" />
+        android:dialogMessage="@string/defaultFolderMsg"
+        android:title="@string/defaultFolder" />
 </PreferenceScreen>

@@ -136,6 +136,16 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
             }
             return true;
         }
+        if (id == R.id.action_home) {
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            String path = sharedPreferences.getString( "edit_text_preference_1", null );
+            showedDirectory = new File(path);
+            try {
+                showPath();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
 
         return super.onOptionsItemSelected(item);
     }

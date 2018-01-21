@@ -13,4 +13,9 @@
         android:icon="@android:drawable/ic_popup_sync"
         android:title="@string/action_refresh"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_home"
+        android:icon="@drawable/home"
+        android:title="@string/action_home"
+        app:showAsAction="ifRoom" />
 </menu>
