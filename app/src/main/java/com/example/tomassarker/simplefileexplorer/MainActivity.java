@@ -62,6 +62,12 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        if (savedInstanceState != null) {
+            String fileName = savedInstanceState.getString(BUNDLE_KEY_FILE_STRING);
+            if (fileName != null) showedDirectory = new File(fileName);
+            return;
+        }
+
 
         //Na zaciatok zobrazime fragment s progress barom
         progressBarFragment = ProgressBarFragment.newInstance();
@@ -69,10 +75,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         transaction.replace(R.id.MainActivity_FrameLayout, progressBarFragment);
         transaction.commit();
 
-        if (savedInstanceState != null) {
-            String fileName = savedInstanceState.getString(BUNDLE_KEY_FILE_STRING);
-            if (fileName != null) showedDirectory = new File(fileName);
-        }
+
         if (showedDirectory == null) {
             //nacitame predvoleny adresar
             //TODO: nacitanie z preferences
@@ -88,7 +91,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         } else {
             try {
-                showPath();
+                if (savedInstanceState == null) showPath();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

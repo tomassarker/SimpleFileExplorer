@@ -2,6 +2,7 @@ package com.example.tomassarker.simplefileexplorer;
 
 import android.content.Context;
 import android.database.DataSetObserver;
+import android.drm.DrmStore;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -41,8 +42,10 @@ import java.util.ArrayList;
  */
 public class FileViewFragment extends Fragment {
 
-    //konstanta vyuziter pri savedInstanceState
+    //konstanty vyuziter pri savedInstanceState
     private static final String STRING_ARRAY = "array";
+    private static final String CHECKED_ARRAY = "isChecked array";
+    private static final String CAB_SHOWED = "isCabShowed";
     //zlozka na zobrazenie
     private File[] files;
 
@@ -50,7 +53,63 @@ public class FileViewFragment extends Fragment {
     private View view;
     private AbsListView viewContainer;
     private OnFragmentInteractionListener mListener;
-    private AbsListView.MultiChoiceModeListener multiChoiceModeListener;
+    private ActionMode actionMode;
+    private AbsListView.MultiChoiceModeListener multiChoiceModeListener = new AbsListView.MultiChoiceModeListener() {
+        @Override
+        public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+            // Here you can do something when items are selected/de-selected,
+            // such as update the title in the CAB
+
+            //vynutime zmenu layoutu
+            viewContainer.getAdapter().getView(position, null, null);
+            viewContainer.invalidateViews();
+
+            //zmena titulku v CAB
+            mode.setTitle( String.valueOf(viewContainer.getCheckedItemCount()) );
+        }
+
+        @Override
+        public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+            // Inflate the menu for the CAB
+            MenuInflater inflater = mode.getMenuInflater();
+            inflater.inflate(R.menu.context_delete_files, menu);
+            actionMode = mode;
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+            // Here you can perform updates to the CAB due to
+            // an invalidate() request
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+            // Respond to clicks on the actions in the CAB
+            switch (item.getItemId()) {
+                case R.id.menu_delete:
+                    deleteSelectedItems();
+                    mode.finish(); // Action picked, so close the CAB
+                    return true;
+                case R.id.menu_selectAll:
+                    for (int i = 0; i < files.length; i++) {
+                        viewContainer.setItemChecked(i, true);
+                    }
+                    return true;
+                default:
+                    return false;
+            }
+
+        }
+
+        @Override
+        public void onDestroyActionMode(ActionMode mode) {
+            // Here you can make any necessary updates to the activity when
+            // the CAB is removed. By default, selected items are deselected/unchecked.
+        }
+    };
+
 
     public FileViewFragment() {
         // Required empty public constructor
@@ -70,6 +129,7 @@ public class FileViewFragment extends Fragment {
         fragment.files = files;
         return fragment;
     }
+
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -107,63 +167,22 @@ public class FileViewFragment extends Fragment {
         });
 
         //nastavime CAB
-        multiChoiceModeListener = new AbsListView.MultiChoiceModeListener() {
-            @Override
-            public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
-                // Here you can do something when items are selected/de-selected,
-                // such as update the title in the CAB
-
-                //vynutime zmenu layoutu
-                viewContainer.getAdapter().getView(position, null, null);
-                viewContainer.invalidateViews();
-
-                //zmena titulku v CAB
-                mode.setTitle( String.valueOf(viewContainer.getCheckedItemCount()) );
-            }
-
-            @Override
-            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
-                // Inflate the menu for the CAB
-                MenuInflater inflater = mode.getMenuInflater();
-                inflater.inflate(R.menu.context_delete_files, menu);
-
-                return true;
-            }
-
-            @Override
-            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
-                // Here you can perform updates to the CAB due to
-                // an invalidate() request
-                return false;
-            }
-
-            @Override
-            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
-                // Respond to clicks on the actions in the CAB
-                switch (item.getItemId()) {
-                    case R.id.menu_delete:
-                        deleteSelectedItems();
-                        mode.finish(); // Action picked, so close the CAB
-                        return true;
-                    case R.id.menu_selectAll:
-                        for (int i = 0; i < files.length; i++) {
-                            viewContainer.setItemChecked(i, true);
-                        }
-                        return true;
-                    default:
-                        return false;
-                }
-
-            }
-
-            @Override
-            public void onDestroyActionMode(ActionMode mode) {
-                // Here you can make any necessary updates to the activity when
-                // the CAB is removed. By default, selected items are deselected/unchecked.
-            }
-        };
-        viewContainer.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        viewContainer.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
         viewContainer.setMultiChoiceModeListener(multiChoiceModeListener);
+
+        if (savedInstanceState != null) {
+            //TODO:zobrazenie CABu
+            //zaskrtame vybrate polozky
+            if (savedInstanceState.getBoolean(CAB_SHOWED)) {
+                viewContainer.startActionMode(multiChoiceModeListener);
+                boolean checked[] = savedInstanceState.getBooleanArray(CHECKED_ARRAY);
+                for (int i = 0; i < files.length; i++) {
+                    viewContainer.setItemChecked(i, checked[i]);
+                }
+                viewContainer.invalidate();
+                viewContainer.invalidateViews();
+            }
+        }
 
         return view;
     }
@@ -175,10 +194,17 @@ public class FileViewFragment extends Fragment {
 
         //pre jednoduchost ulozime len pole suborov skonvertovane na String[]
         String nazvySuborov[] = new String[files.length];
+        boolean showCAB = (viewContainer.getCheckedItemCount() > 0)?true:false;
+        boolean checked[] = new boolean[files.length];
         for (int i = 0; i < files.length; i++) {
             nazvySuborov[i] = files[i].toString();
+            checked[i] = viewContainer.isItemChecked(i);
+            viewContainer.setItemChecked(i, false);
         }
+
+        outState.putBoolean(CAB_SHOWED,showCAB);
         outState.putStringArray(STRING_ARRAY, nazvySuborov);
+        outState.putBooleanArray(CHECKED_ARRAY, checked);
     }
 
     /**
