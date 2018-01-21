@@ -7,7 +7,11 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.view.ActionMode;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -40,7 +44,9 @@ public class FileViewFragment extends Fragment {
     //zlozka na zobrazenie
     private File[] files;
 
+
     private View view;
+    private AbsListView viewContainer;
     private OnFragmentInteractionListener mListener;
 
     public FileViewFragment() {
@@ -82,18 +88,71 @@ public class FileViewFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         view = inflater.inflate(R.layout.fragment_file_view, container, false);
 
         //nastavime ListView/GridView
-        AbsListView viewContainer = view.findViewById(R.id.fileViewContainer); //Premenna moze obsahovat bud ListView alebo GridView - s obomi sa pracuje rovnako
+        viewContainer = view.findViewById(R.id.fileViewContainer); //Premenna moze obsahovat bud ListView alebo GridView - s obomi sa pracuje rovnako
         viewContainer.setAdapter(new FileListAdapter(getContext(), files));
         viewContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 onItemClicked(files[position]);
+            }
+        });
+
+        //nastavime CAB
+        viewContainer.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE_MODAL);
+        viewContainer.setMultiChoiceModeListener(new AbsListView.MultiChoiceModeListener() {
+            @Override
+            public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
+                // Here you can do something when items are selected/de-selected,
+                // such as update the title in the CAB
+
+                //vynutime zmenu layoutu
+                //TODO
+                viewContainer.getAdapter().getView(position, null, null);
+                viewContainer.invalidateViews();
+
+                //zmena titulku v CAB
+                mode.setTitle( String.valueOf(viewContainer.getCheckedItemCount()) );
+            }
+
+            @Override
+            public boolean onCreateActionMode(ActionMode mode, Menu menu) {
+                // Inflate the menu for the CAB
+                MenuInflater inflater = mode.getMenuInflater();
+                inflater.inflate(R.menu.context_delete_files, menu);
+                return true;
+            }
+
+            @Override
+            public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+                // Here you can perform updates to the CAB due to
+                // an invalidate() request
+                return false;
+            }
+
+            @Override
+            public boolean onActionItemClicked(ActionMode mode, MenuItem item) {
+                // Respond to clicks on the actions in the CAB
+                switch (item.getItemId()) {
+                    case R.id.menu_delete:
+                        deleteSelectedItems();
+                        mode.finish(); // Action picked, so close the CAB
+                        return true;
+                    default:
+                        return false;
+                }
+
+            }
+
+            @Override
+            public void onDestroyActionMode(ActionMode mode) {
+                // Here you can make any necessary updates to the activity when
+                // the CAB is removed. By default, selected items are deselected/unchecked.
             }
         });
 
@@ -141,6 +200,10 @@ public class FileViewFragment extends Fragment {
         mListener = null;
     }
 
+    private void deleteSelectedItems() {
+
+    }
+
     /**
      * This interface must be implemented by activities that contain this
      * fragment to allow an interaction in this fragment to be communicated
@@ -180,18 +243,23 @@ public class FileViewFragment extends Fragment {
             tvName.setText(file.getName());
             ImageView imageView = convertView.findViewById(R.id.fileView_imageView);
             if (file.isFile()) {
-                imageView.setImageResource(R.drawable.file);
-//                imageView.setImageDrawable(getResources().getDrawable(R.drawable.file, null));
+                if ( viewContainer.isItemChecked(position) ) {
+                    imageView.setImageResource(R.drawable.file_checked);
+                } else {
+                    imageView.setImageResource(R.drawable.file);
+                }
             }
             if (file.isDirectory()) {
-//                imageView.setImageDrawable(getResources().getDrawable(R.drawable.folder, null));
-                imageView.setImageResource(R.drawable.folder);
+                if ( viewContainer.isItemChecked(position) ) {
+                    imageView.setImageResource(R.drawable.folder_checked);
+                } else {
+                    imageView.setImageResource(R.drawable.folder);
+                }
             }
 
             // Return the completed view to render on screen
             return convertView;
         }
-
 
     }
 
