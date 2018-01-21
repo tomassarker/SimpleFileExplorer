@@ -44,6 +44,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
     private boolean canAccesStorage;
     //aktualne zobrazovana zlozka
     private File showedDirectory;
+    private final static String BUNDLE_KEY_FILE_STRING = "file_name";
 
 
     //request kody pre povolenia
@@ -61,18 +62,25 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+
         //Na zaciatok zobrazime fragment s progress barom
         progressBarFragment = ProgressBarFragment.newInstance();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.MainActivity_FrameLayout, progressBarFragment);
         transaction.commit();
 
-        //nacitame predvoleny adresar
-        //TODO: nacitanie z preferences
-        //showedDirectory = Environment.getExternalStorageDirectory();
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String path = sharedPreferences.getString( "list_preference_1", Environment.getExternalStorageDirectory().toString() );
-        showedDirectory = new File(path);
+        if (savedInstanceState != null) {
+            String fileName = savedInstanceState.getString(BUNDLE_KEY_FILE_STRING);
+            if (fileName != null) showedDirectory = new File(fileName);
+        }
+        if (showedDirectory == null) {
+            //nacitame predvoleny adresar
+            //TODO: nacitanie z preferences
+            //showedDirectory = Environment.getExternalStorageDirectory();
+            SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            String path = sharedPreferences.getString( "list_preference_1", Environment.getExternalStorageDirectory().toString() );
+            showedDirectory = new File(path);
+        }
 
         //overime opravnenie citat/zapisovat ulozisko
         canAccesStorage = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
@@ -176,6 +184,13 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
 //        return super.onSupportNavigateUp();
         navigateUp();
         return true;
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        String filePath = showedDirectory.toString();
+        outState.putString(BUNDLE_KEY_FILE_STRING, filePath);
     }
 
     /**
