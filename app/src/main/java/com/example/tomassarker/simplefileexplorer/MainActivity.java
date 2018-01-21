@@ -79,9 +79,15 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         if (showedDirectory == null) {
             //nacitame predvoleny adresar
             //TODO: nacitanie z preferences
-            //showedDirectory = Environment.getExternalStorageDirectory();
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-            String path = sharedPreferences.getString( "list_preference_1", Environment.getExternalStorageDirectory().toString() );
+            String path = sharedPreferences.getString( "edit_text_preference_1", null );
+            if (path == null) {
+                path = Environment.getExternalStorageDirectory().toString();
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("edit_text_preference_1", path);
+                editor.commit();
+            }
+            //showedDirectory = Environment.getExternalStorageDirectory();
             showedDirectory = new File(path);
         }
 
@@ -117,7 +123,8 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
-            //TODO: zobrazenie nastaveni
+            Intent intent = new Intent(this, SettingsActivity.class);
+            startActivity(intent);
             return true;
         }
         if (id == R.id.action_refresh) {

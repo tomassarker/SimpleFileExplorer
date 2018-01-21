@@ -60,7 +60,7 @@ public class FileViewFragment extends Fragment {
             // Here you can do something when items are selected/de-selected,
             // such as update the title in the CAB
 
-            //vynutime zmenu layoutu
+            //vynutime zobrazenie CABu
             viewContainer.getAdapter().getView(position, null, null);
             viewContainer.invalidateViews();
 
