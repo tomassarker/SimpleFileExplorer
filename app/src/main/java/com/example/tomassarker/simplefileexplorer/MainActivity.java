@@ -6,9 +6,11 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.PersistableBundle;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -29,6 +31,7 @@ import android.widget.Toast;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -250,28 +253,35 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         }
         else if (file.isFile()) {
             //TODO: otvorenie suboru
-            Uri uri = Uri.fromFile(file);
-            String mime = getContentResolver().getType(uri);
+            Log.d("show file", file.toString());
 
-            Intent openFileIntent = new Intent();
-//            openFileIntent.setAction(Intent.ACTION_VIEW);
-//            openFileIntent.setDataAndType(uri, mime);
-//            openFileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//            startActivity(openFileIntent);
+            if(Build.VERSION.SDK_INT>=24){
+                try{
+                    Method m = StrictMode.class.getMethod("disableDeathOnFileUriExposure");
+                    m.invoke(null);
+                }catch(Exception e){
+                    e.printStackTrace();
+                }
+            }
 
-            openFileIntent.setData(uri);
-            //openFileIntent.setAction(android.content.Intent.ACTION_VIEW);
 
+            MimeTypeMap map = MimeTypeMap.getSingleton();
+            String ext = MimeTypeMap.getFileExtensionFromUrl(file.getName());
+            String type = map.getMimeTypeFromExtension(ext);
 
-//            String extension[] = file.toString().split(".");
-//            String ex = extension[extension.length-1];
-//
+            if (type == null)
+                type = "*/*";
 
-//            String type = MimeTypeMap.getSingleton().getMimeTypeFromExtension(ex);
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            Uri data = Uri.fromFile(file);
+//            intent.setAction(Intent.ACTION_VIEW);
+            intent.setData(data);
 
-            openFileIntent.setType("file/?");
+            intent.setType(type);
 
-            startActivity(openFileIntent);
+            intent.setDataAndType(data, type);
+
+            startActivity(intent);
         }
     }
 
