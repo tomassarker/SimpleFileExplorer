@@ -1,6 +1,7 @@
 package com.example.tomassarker.simplefileexplorer;
 
 import android.Manifest;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -11,6 +12,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.PersistableBundle;
 import android.os.StrictMode;
+import android.preference.DialogPreference;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
@@ -20,6 +22,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.FileProvider;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -39,6 +42,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+/**
+ * MainActivity - zabezpecuje zobrazovanie {@link FileViewFragment}
+ */
 public class MainActivity extends AppCompatActivity implements FileViewFragment.OnFragmentInteractionListener {
 
 
@@ -47,7 +53,6 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
     //aktualne zobrazovana zlozka
     private File showedDirectory;
     private final static String BUNDLE_KEY_FILE_STRING = "file_name";
-
 
     //request kody pre povolenia
     static public final HashMap<String, Integer> permissions = new HashMap<String, Integer>(){};
@@ -80,24 +85,26 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
 
         if (showedDirectory == null) {
             //nacitame predvoleny adresar
-            //TODO: nacitanie z preferences
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
             String path = sharedPreferences.getString( "edit_text_preference_1", null );
             if (path == null) {
+                //ak nebol v SharedPref ulozeny predvoleny priecinok, otvorime "root" a nastavime ho ako predvoleny
                 path = Environment.getExternalStorageDirectory().toString();
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("edit_text_preference_1", path);
                 editor.commit();
             }
-            //showedDirectory = Environment.getExternalStorageDirectory();
+            //cestu k zlozke prekovertujeme na File
             showedDirectory = new File(path);
         }
 
         //overime opravnenie citat/zapisovat ulozisko
         canAccesStorage = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         if (!canAccesStorage) {
+            //ak nemame opravnenie, vypytame ho
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
         } else {
+            //ak opravnenie mame, zobrazime defaultny priecinok
             try {
                 if (savedInstanceState == null) showPath();
             } catch (InterruptedException e) {
@@ -125,12 +132,14 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            //zobrazime nastavenia
             Intent intent = new Intent(this, SettingsActivity.class);
             intent.putExtra(SettingsActivity.CURRENT_PATH, showedDirectory.toString());
             startActivity(intent);
             return true;
         }
         if (id == R.id.action_refresh) {
+            //znovu zobrazime aktualnu zlozku
             try {
                 showPath();
             } catch (InterruptedException e) {
@@ -139,6 +148,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
             return true;
         }
         if (id == R.id.action_home) {
+            //zobrazime default folder
             SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
             String path = sharedPreferences.getString( "edit_text_preference_1", null );
             showedDirectory = new File(path);
@@ -152,6 +162,10 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Zobrazi alebo skryje ActionBar
+     * @param visible
+     */
     @Override
     public void setToolbarVisible(boolean visible) {
         if (!visible) getSupportActionBar().hide();
@@ -163,15 +177,32 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         //reakcia na uzivatelove povolenie/zamietnutie pozadovanych povoleni
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED) {
+            //ak boli pridelene opravnenia, zobrazime zlozku (defaultnu)
             try {
                 showPath();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         } else {
-            Snackbar.make(findViewById(android.R.id.content), "appka nebude fungovat..", 1500).show();
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+            //ak neboli opravnenia udelene, informujeme uzivatela o nefuncnosti appky a poziadame o ne znovu...
+            //TODO: informovanie cez dialog - tato metoda by sa zavolala len ak by uzivatel klikol ok
+            AlertDialog.Builder builder = new AlertDialog.Builder(this);
+            builder.setTitle(R.string.dialog_permisionNotGranted_title)
+                    .setMessage(R.string.dialog_permisionNotGranted_msg)
+                    .setNegativeButton(android.R.string.no, null)
+                    .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            requestPermissionsAgain();
+                        }
+                    })
+                    .create()
+                    .show();
         }
+    }
+
+    private void requestPermissionsAgain() {
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
     }
 
     /**
@@ -179,7 +210,6 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
      * @throws InterruptedException
      */
     private void showPath() throws InterruptedException {
-        //TODO
         Log.d("showPath",showedDirectory.toString());
 
         //najprv zobrazime progress bar
@@ -256,8 +286,8 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
                 e.printStackTrace();
             }
         }
+
         else if (file.isFile()) {
-            //TODO: otvorenie suboru
             Log.d("show file", file.toString());
 
             if(Build.VERSION.SDK_INT>=24){
@@ -279,19 +309,13 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
 
             Intent intent = new Intent(Intent.ACTION_VIEW);
             Uri data = Uri.fromFile(file);
-//            intent.setAction(Intent.ACTION_VIEW);
-            intent.setData(data);
-
-            intent.setType(type);
-
             intent.setDataAndType(data, type);
-
             startActivity(intent);
         }
     }
 
     /**
-     * Trieda sluzi na nacitanie obsahu zlozku pomocou samostatneho vlakna
+     * Trieda sluzi na nacitanie obsahu zlozky pomocou samostatneho vlakna
      */
     private class PathReader implements Runnable {
 

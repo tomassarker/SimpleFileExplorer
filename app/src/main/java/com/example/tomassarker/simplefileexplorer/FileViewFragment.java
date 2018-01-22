@@ -1,6 +1,8 @@
 package com.example.tomassarker.simplefileexplorer;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.DataSetObserver;
 import android.drm.DrmStore;
 import android.net.Uri;
@@ -53,7 +55,7 @@ public class FileViewFragment extends Fragment {
     private View view;
     private AbsListView viewContainer;
     private OnFragmentInteractionListener mListener;
-    private ActionMode actionMode;
+    //CAB
     private AbsListView.MultiChoiceModeListener multiChoiceModeListener = new AbsListView.MultiChoiceModeListener() {
         @Override
         public void onItemCheckedStateChanged(ActionMode mode, int position, long id, boolean checked) {
@@ -74,7 +76,6 @@ public class FileViewFragment extends Fragment {
             MenuInflater inflater = mode.getMenuInflater();
             inflater.inflate(R.menu.context_delete_files, menu);
             mListener.setToolbarVisible(false);
-            actionMode = mode;
             return true;
         }
 
@@ -90,7 +91,7 @@ public class FileViewFragment extends Fragment {
             // Respond to clicks on the actions in the CAB
             switch (item.getItemId()) {
                 case R.id.menu_delete:
-                    deleteSelectedItems();
+                    deleteItemClicked();
                     mode.finish(); // Action picked, so close the CAB
                     return true;
                 case R.id.menu_selectAll:
@@ -235,6 +236,25 @@ public class FileViewFragment extends Fragment {
     public void onDetach() {
         super.onDetach();
         mListener = null;
+    }
+
+    /**
+     * vyziada si od uzivatela potvrdenie pred vymazanim vybratych poloziek
+     */
+    private void deleteItemClicked() {
+        AlertDialog.Builder builder = new AlertDialog.Builder((getActivity()));
+        builder
+                .setTitle(R.string.deleteDialog_title)
+                .setMessage(R.string.deleteDialog_msg)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        deleteSelectedItems();
+                    }
+                })
+                .setNegativeButton(android.R.string.cancel, null);
+        builder.create().show();
+
     }
 
     private void deleteSelectedItems() {

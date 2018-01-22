@@ -1,16 +1,23 @@
 <resources>
     <!-- Titulky aktivit -->
     <string name="app_name">File Explorer</string>
+    <string name="title_activity_settings">Nastavenia</string>
+
+    <!--MainActivity-->
+    <string name="dialog_permisionNotGranted_title">Aplikácia nemá potrebné oprávnenia</string>
+    <string name="dialog_permisionNotGranted_msg">Ak neudelíte aplikácií potrebné oprávnenia, nebude fungovať správne. Chcete aplikácií oprávnenia udeliť?</string>
 
     <!-- Popisky akcnych tlacidiel -->
     <string name="action_home">Domov</string>
     <string name="action_settings">Nastavenia</string>
     <string name="action_refresh">Obnoviť</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <!-- ProgressBarFragment -->
     <string name="nacitavanie_obsahu">Prebieha načítavanie obsahu...</string>
-    <string name="title_activity_settings">Nastavenia</string>
+
+    <!--FileViewFragment-->
+    <string name="deleteDialog_title">Vymazať vybraté položky</string>
+    <string name="deleteDialog_msg">Naozaj si želáte ostrániť vybraté položky? Túto operáciu nebudete môcť vrátiť späť.</string>
 
     <!-- Strings related to Settings -->
     <string name="defaultFolder">Predvolený priečinok</string>

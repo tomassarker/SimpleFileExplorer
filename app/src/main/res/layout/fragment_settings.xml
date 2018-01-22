@@ -4,6 +4,5 @@
     android:layout_height="match_parent"
     tools:context="com.example.tomassarker.simplefileexplorer.SettingsFragment">
 
-    <!-- TODO: Update blank fragment layout -->
 
 </FrameLayout>

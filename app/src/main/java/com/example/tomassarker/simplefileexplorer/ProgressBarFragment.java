@@ -28,7 +28,6 @@ public class ProgressBarFragment extends Fragment {
      * this fragment using the provided parameters.
      * @return A new instance of fragment ProgressBarFragment.
      */
-    // TODO: Rename and change types and number of parameters
     public static ProgressBarFragment newInstance() {
         ProgressBarFragment fragment = new ProgressBarFragment();
         Bundle args = new Bundle();
