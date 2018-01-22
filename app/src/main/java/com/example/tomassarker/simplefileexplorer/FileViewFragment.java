@@ -73,6 +73,7 @@ public class FileViewFragment extends Fragment {
             // Inflate the menu for the CAB
             MenuInflater inflater = mode.getMenuInflater();
             inflater.inflate(R.menu.context_delete_files, menu);
+            mListener.setToolbarVisible(false);
             actionMode = mode;
             return true;
         }
@@ -107,6 +108,7 @@ public class FileViewFragment extends Fragment {
         public void onDestroyActionMode(ActionMode mode) {
             // Here you can make any necessary updates to the activity when
             // the CAB is removed. By default, selected items are deselected/unchecked.
+            mListener.setToolbarVisible(true);
         }
     };
 
@@ -272,6 +274,7 @@ public class FileViewFragment extends Fragment {
      */
     public interface OnFragmentInteractionListener {
         void onFragmentInteractionFileSelected(File file);
+        void setToolbarVisible(boolean visible);
     }
 
 

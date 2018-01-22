@@ -41,8 +41,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements FileViewFragment.OnFragmentInteractionListener {
 
-    //fragment, ktory sa zobrazi pocas nacitavania zlozky samostatnym vlaknom
-    private Fragment progressBarFragment;
+
     //boolean - pravo zapisovat - nevyhnutne
     private boolean canAccesStorage;
     //aktualne zobrazovana zlozka
@@ -65,6 +64,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+
         if (savedInstanceState != null) {
             String fileName = savedInstanceState.getString(BUNDLE_KEY_FILE_STRING);
             if (fileName != null) showedDirectory = new File(fileName);
@@ -73,9 +73,8 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
 
 
         //Na zaciatok zobrazime fragment s progress barom
-        progressBarFragment = ProgressBarFragment.newInstance();
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.MainActivity_FrameLayout, progressBarFragment);
+        transaction.replace(R.id.MainActivity_FrameLayout, ProgressBarFragment.newInstance());
         transaction.commit();
 
 
@@ -153,6 +152,12 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void setToolbarVisible(boolean visible) {
+        if (!visible) getSupportActionBar().hide();
+        if (visible) getSupportActionBar().show();
+    }
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -181,7 +186,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         getSupportFragmentManager()
                 .beginTransaction()
                 .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                .replace(R.id.MainActivity_FrameLayout, progressBarFragment)
+                .replace(R.id.MainActivity_FrameLayout, ProgressBarFragment.newInstance())
                 //.addToBackStack(null)
                 .commit();
 
