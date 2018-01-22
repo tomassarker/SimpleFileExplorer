@@ -290,6 +290,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         else if (file.isFile()) {
             Log.d("show file", file.toString());
 
+            //Potrebne pre OS Android >=7.0
             if(Build.VERSION.SDK_INT>=24){
                 try{
                     Method m = StrictMode.class.getMethod("disableDeathOnFileUriExposure");
@@ -299,14 +300,16 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
                 }
             }
 
-
+            //zistime typ suboru podla mime
             MimeTypeMap map = MimeTypeMap.getSingleton();
             String ext = MimeTypeMap.getFileExtensionFromUrl(file.getName());
             String type = map.getMimeTypeFromExtension(ext);
 
+            //ak sme nedokazali rozoznat typ suboru, urcime ho vseobecne
             if (type == null)
                 type = "*/*";
 
+            //zobrazenie suboru s moznostnou vyberu apouzitej appky
             Intent intent = new Intent(Intent.ACTION_VIEW);
             Uri data = Uri.fromFile(file);
             intent.setDataAndType(data, type);

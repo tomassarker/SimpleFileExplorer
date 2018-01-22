@@ -44,7 +44,7 @@ import java.util.ArrayList;
  */
 public class FileViewFragment extends Fragment {
 
-    //konstanty vyuziter pri savedInstanceState
+    //konstanty vyuzite pri savedInstanceState
     private static final String STRING_ARRAY = "array";
     private static final String CHECKED_ARRAY = "isChecked array";
     private static final String CAB_SHOWED = "isCabShowed";
@@ -122,7 +122,7 @@ public class FileViewFragment extends Fragment {
      * Use this factory method to create a new instance of
      * this fragment using the provided parameters.
      *
-     * @param files Parameter 1.
+     * @param files pole suborov, ktore sa maju zobrazit v zozname.
      * @return A new instance of fragment FileViewFragment.
      */
     public static FileViewFragment newInstance(File files[]) {
@@ -266,7 +266,7 @@ public class FileViewFragment extends Fragment {
         //vyjmazeme adapter, aby sa nepokusal robit s neexistujucimi datami
         viewContainer.setAdapter(null);
 
-        //vymazeme pozadovane data a nevymnazane subory ulozimie do noveho pole
+        //vymazeme pozadovane data a nevymnazane subory ulozimie do noveho pola
         int zachovaneSubory = 0;
         for (int i = 0; i < files.length; i++) {
             if (delete[i]) {
