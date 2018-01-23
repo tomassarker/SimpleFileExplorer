@@ -72,6 +72,8 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         if (savedInstanceState != null) {
             String fileName = savedInstanceState.getString(BUNDLE_KEY_FILE_STRING);
             if (fileName != null) showedDirectory = new File(fileName);
+            //ak existuje matersky priecinok, zobrazime sipku spat
+            if (showedDirectory.getParentFile() != null) { getSupportActionBar().setDisplayHomeAsUpEnabled(true); }
             return;
         }
 
@@ -229,6 +231,9 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         PathReader pathReader = new PathReader(showedDirectory);
         pathReader.thread.join();
 
+        //ak existuje matersky priecinok, zobrazime sipku spat
+        if (showedDirectory.getParentFile() != null) { getSupportActionBar().setDisplayHomeAsUpEnabled(true); }
+
         //zobrazime obsah priecinka
         FileViewFragment fileViewFragment = FileViewFragment.newInstance(pathReader.pathContent);
         getSupportFragmentManager()
@@ -272,6 +277,9 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
             //ak uz neexistuje dalsi matersky priecinok, schovame sipku spat z toolbaru
             if ( showedDirectory != null && (showedDirectory.getParentFile()) == null ) {
                 getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            } else {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+
             }
         }
 
