@@ -177,12 +177,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         //reakcia na uzivatelove povolenie/zamietnutie pozadovanych povoleni
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)==PackageManager.PERMISSION_GRANTED) {
-            //ak boli pridelene opravnenia, zobrazime zlozku (defaultnu)
-            try {
-                showPath();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            //ak boli pridelene opravnenia, netreba robit (zatial) nic
         } else {
             //ak neboli opravnenia udelene, informujeme uzivatela o nefuncnosti appky a poziadame o ne znovu...
             //TODO: informovanie cez dialog - tato metoda by sa zavolala len ak by uzivatel klikol ok
@@ -199,6 +194,11 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
                     .create()
                     .show();
         }
+        try {
+            showPath();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     private void requestPermissionsAgain() {
@@ -213,12 +213,13 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         Log.d("showPath",showedDirectory.toString());
 
         //najprv zobrazime progress bar
+//        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         getSupportFragmentManager()
                 .beginTransaction()
                 .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 .replace(R.id.MainActivity_FrameLayout, ProgressBarFragment.newInstance())
                 //.addToBackStack(null)
-                .commit();
+                .commitAllowingStateLoss();
 
         //
 
@@ -232,7 +233,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
                 .beginTransaction()
                 .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
                 .replace(R.id.MainActivity_FrameLayout, fileViewFragment)
-                .commit();
+                .commitAllowingStateLoss();
 
     }
 
