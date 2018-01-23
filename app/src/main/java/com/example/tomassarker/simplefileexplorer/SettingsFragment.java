@@ -3,11 +3,15 @@ package com.example.tomassarker.simplefileexplorer;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.preference.EditTextPreference;
+import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import java.io.File;
 
 
 /**
@@ -43,6 +47,20 @@ public class SettingsFragment extends PreferenceFragment {
         super.onCreate(savedInstanceState);
         // Load the preferences from an XML resource
         addPreferencesFromResource(R.xml.preferences);
+
+        EditTextPreference edit_Pref = (EditTextPreference)
+                getPreferenceScreen().findPreference("edit_text_preference_1");
+        edit_Pref.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                File file = new File(newValue.toString());
+                if (file.exists() && file.isDirectory()) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+        });
 
         if (getArguments() != null) {
             currentPath = getArguments().getString(SettingsActivity.CURRENT_PATH);
