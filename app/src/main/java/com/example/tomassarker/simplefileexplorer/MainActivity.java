@@ -67,7 +67,6 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 
         if (savedInstanceState != null) {
@@ -98,7 +97,11 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
             showedDirectory = new File(path);
         }
 
-        //overime opravnenie citat/zapisovat ulozisko
+        //ak existuje matersky priecinok, zobrazime sipku spat
+        if (showedDirectory.getParentFile() != null) { getSupportActionBar().setDisplayHomeAsUpEnabled(true); }
+
+
+        //overime opravnenie zapisovat ulozisko
         canAccesStorage = ActivityCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
         if (!canAccesStorage) {
             //ak nemame opravnenie, vypytame ho
@@ -213,7 +216,6 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         Log.d("showPath",showedDirectory.toString());
 
         //najprv zobrazime progress bar
-//        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         getSupportFragmentManager()
                 .beginTransaction()
                 .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
@@ -261,11 +263,16 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
      * Vola sa, ak uzivatel stlaci sipku spat - zobrazi horny priecinok alebo ukonci appku
      */
     private void navigateUp() {
-        if (showedDirectory == null) {
+        if (showedDirectory.getParentFile() == null) {
             //ak uz horny priecinok neexistuje, ukoncime appku
             finish();
         } else {
+            //posunieme sa o uroven vyssie
             showedDirectory = showedDirectory.getParentFile();
+            //ak uz neexistuje dalsi matersky priecinok, schovame sipku spat z toolbaru
+            if ( showedDirectory != null && (showedDirectory.getParentFile()) == null ) {
+                getSupportActionBar().setDisplayHomeAsUpEnabled(false);
+            }
         }
 
         try {
