@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
@@ -91,7 +92,7 @@ public class FileViewFragment extends Fragment {
             // Respond to clicks on the actions in the CAB
             switch (item.getItemId()) {
                 case R.id.menu_delete:
-                    deleteItemClicked();
+                    deleteSelectedItems();
                     mode.finish(); // Action picked, so close the CAB
                     return true;
                 case R.id.menu_selectAll:
@@ -238,10 +239,15 @@ public class FileViewFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * vyziada si od uzivatela potvrdenie pred vymazanim vybratych poloziek
-     */
-    private void deleteItemClicked() {
+
+    private void deleteSelectedItems() {
+        Log.d("deleteSelectedItems", "begin");
+        //pozhrname pozadovane data
+        final boolean[] delete = new boolean[files.length];
+        for (int i = 0; i < files.length; i++) { delete[i]=(viewContainer.isItemChecked(i))?true:false; }
+        final File[] newFiles = new File[files.length - viewContainer.getCheckedItemCount()];
+
+        //poziadame uzivatela o potvrdenie
         AlertDialog.Builder builder = new AlertDialog.Builder((getActivity()));
         builder
                 .setTitle(R.string.deleteDialog_title)
@@ -249,37 +255,28 @@ public class FileViewFragment extends Fragment {
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        deleteSelectedItems();
+                        //vyjmazeme adapter, aby sa nepokusal robit s neexistujucimi datami
+                        viewContainer.setAdapter(null);
+
+                        //vymazeme pozadovane data a nevymnazane subory ulozimie do noveho pola
+                        int zachovaneSubory = 0;
+                        for (int i = 0; i < files.length; i++) {
+                            if (delete[i]) {
+                                files[i].delete();
+                            } else {
+                                newFiles[zachovaneSubory++] = files[i];
+                            }
+                        }
+
+                        //opatovne nastavenie Grid/ListView
+                        files = newFiles;
+                        viewContainer.setAdapter( new FileListAdapter(getContext(), files) );
+                        viewContainer.setMultiChoiceModeListener(multiChoiceModeListener);
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, null);
         builder.create().show();
 
-    }
-
-    private void deleteSelectedItems() {
-        //pozhrname pozadovane data
-        boolean[] delete = new boolean[files.length];
-        for (int i = 0; i < files.length; i++) { delete[i]=(viewContainer.isItemChecked(i))?true:false; }
-        File[] newFiles = new File[files.length - viewContainer.getCheckedItemCount()];
-
-        //vyjmazeme adapter, aby sa nepokusal robit s neexistujucimi datami
-        viewContainer.setAdapter(null);
-
-        //vymazeme pozadovane data a nevymnazane subory ulozimie do noveho pola
-        int zachovaneSubory = 0;
-        for (int i = 0; i < files.length; i++) {
-            if (delete[i]) {
-                files[i].delete();
-            } else {
-                newFiles[zachovaneSubory++] = files[i];
-            }
-        }
-
-        //opatovne nastavenie Grid/ListView
-        files = newFiles;
-        viewContainer.setAdapter( new FileListAdapter(getContext(), files) );
-        viewContainer.setMultiChoiceModeListener(multiChoiceModeListener);
     }
 
     /**
