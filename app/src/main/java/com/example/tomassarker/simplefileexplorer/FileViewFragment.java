@@ -228,6 +228,21 @@ public class FileViewFragment extends Fragment {
     }
 
 
+    private static void deleteDirectoryContent(File dir) {
+        //ak parameter neni priecinok, ukoncime metodu
+        if (!dir.isDirectory()) return;
+
+        File children[] = dir.listFiles();
+        for (int i = 0; i < children.length; i++) {
+            if (children[i].isFile()) {
+                children[i].delete();
+            } else {
+                deleteDirectoryContent(children[i]);
+                children[i].delete();
+            }
+        }
+    }
+
     private void deleteSelectedItems() {
         Log.d("deleteSelectedItems", "begin");
         //pozhrname pozadovane data
@@ -250,6 +265,9 @@ public class FileViewFragment extends Fragment {
                         int zachovaneSubory = 0;
                         for (int i = 0; i < files.length; i++) {
                             if (delete[i]) {
+                                //ak sa jedna o priecinok, najprv vymazeme obsah
+                                deleteDirectoryContent(files[i]);
+                                //teraz vymazeme vymazat samotny priecinok
                                 files[i].delete();
                             } else {
                                 newFiles[zachovaneSubory++] = files[i];
