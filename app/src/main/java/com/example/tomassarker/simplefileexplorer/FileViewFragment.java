@@ -47,8 +47,8 @@ public class FileViewFragment extends Fragment {
 
     //konstanty vyuzite pri savedInstanceState
     private static final String STRING_ARRAY = "array";
-    private static final String CHECKED_ARRAY = "isChecked array";
-    private static final String CAB_SHOWED = "isCabShowed";
+//    private static final String CHECKED_ARRAY = "isChecked array";
+//    private static final String CAB_SHOWED = "isCabShowed";
     //zlozka na zobrazenie
     private File[] files;
 
@@ -176,23 +176,6 @@ public class FileViewFragment extends Fragment {
         viewContainer.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
         viewContainer.setMultiChoiceModeListener(multiChoiceModeListener);
 
-
-
-        if (savedInstanceState != null) {
-            //nastavime ListView/GridView
-            //TODO:zobrazenie CABu
-            //zaskrtame vybrate polozky
-            if (savedInstanceState.getBoolean(CAB_SHOWED)) {
-                viewContainer.startActionMode(multiChoiceModeListener);
-                boolean checked[] = savedInstanceState.getBooleanArray(CHECKED_ARRAY);
-                for (int i = 0; i < files.length; i++) {
-                    viewContainer.setItemChecked(i, checked[i]);
-                }
-                viewContainer.invalidate();
-                viewContainer.invalidateViews();
-            }
-        }
-
         return view;
     }
 
@@ -203,17 +186,17 @@ public class FileViewFragment extends Fragment {
 
         //pre jednoduchost ulozime len pole suborov skonvertovane na String[]
         String nazvySuborov[] = new String[files.length];
-        boolean showCAB = (viewContainer.getCheckedItemCount() > 0)?true:false;
-        boolean checked[] = new boolean[files.length];
+//        boolean showCAB = (viewContainer.getCheckedItemCount() > 0)?true:false;
+//        boolean checked[] = new boolean[files.length];
         for (int i = 0; i < files.length; i++) {
             nazvySuborov[i] = files[i].toString();
-            checked[i] = viewContainer.isItemChecked(i);
+//            checked[i] = viewContainer.isItemChecked(i);
 //            viewContainer.setItemChecked(i, false);
         }
 
-        outState.putBoolean(CAB_SHOWED,showCAB);
+//        outState.putBoolean(CAB_SHOWED,showCAB);
         outState.putStringArray(STRING_ARRAY, nazvySuborov);
-        outState.putBooleanArray(CHECKED_ARRAY, checked);
+//        outState.putBooleanArray(CHECKED_ARRAY, checked);
     }
 
     /**
