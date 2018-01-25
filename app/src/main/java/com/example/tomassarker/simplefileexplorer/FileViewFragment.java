@@ -158,9 +158,10 @@ public class FileViewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, final ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+
+
         view = inflater.inflate(R.layout.fragment_file_view, container, false);
 
-        //nastavime ListView/GridView
         viewContainer = view.findViewById(R.id.fileViewContainer); //Premenna moze obsahovat bud ListView alebo GridView - s obomi sa pracuje rovnako
         viewContainer.setAdapter(new FileListAdapter(getContext(), files));
         viewContainer.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -174,7 +175,10 @@ public class FileViewFragment extends Fragment {
         viewContainer.setChoiceMode(AbsListView.CHOICE_MODE_MULTIPLE_MODAL);
         viewContainer.setMultiChoiceModeListener(multiChoiceModeListener);
 
+
+
         if (savedInstanceState != null) {
+            //nastavime ListView/GridView
             //TODO:zobrazenie CABu
             //zaskrtame vybrate polozky
             if (savedInstanceState.getBoolean(CAB_SHOWED)) {
@@ -203,7 +207,7 @@ public class FileViewFragment extends Fragment {
         for (int i = 0; i < files.length; i++) {
             nazvySuborov[i] = files[i].toString();
             checked[i] = viewContainer.isItemChecked(i);
-            viewContainer.setItemChecked(i, false);
+//            viewContainer.setItemChecked(i, false);
         }
 
         outState.putBoolean(CAB_SHOWED,showCAB);
