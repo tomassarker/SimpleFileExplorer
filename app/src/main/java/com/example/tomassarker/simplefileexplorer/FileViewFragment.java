@@ -84,6 +84,7 @@ public class FileViewFragment extends Fragment {
         public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
             // Here you can perform updates to the CAB due to
             // an invalidate() request
+            mode.setTitle( String.valueOf(viewContainer.getCheckedItemCount()) );
             return false;
         }
 
