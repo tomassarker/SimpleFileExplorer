@@ -69,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         setSupportActionBar(toolbar);
 
 
+        //obnovenie premennych z bundle
         if (savedInstanceState != null) {
             String fileName = savedInstanceState.getString(BUNDLE_KEY_FILE_STRING);
             if (fileName != null) showedDirectory = new File(fileName);
@@ -78,10 +79,12 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
         }
 
 
-        //Na zaciatok zobrazime fragment s progress barom
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.MainActivity_FrameLayout, ProgressBarFragment.newInstance());
-        transaction.commit();
+        if (savedInstanceState == null) {
+            //Na zaciatok zobrazime fragment s progress barom
+            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+            transaction.replace(R.id.MainActivity_FrameLayout, ProgressBarFragment.newInstance());
+            transaction.commit();
+        }
 
 
         if (showedDirectory == null) {
@@ -217,30 +220,44 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
     private void showPath() throws InterruptedException {
         Log.d("showPath",showedDirectory.toString());
 
-        //najprv zobrazime progress bar
-        getSupportFragmentManager()
-                .beginTransaction()
-                .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                .replace(R.id.MainActivity_FrameLayout, ProgressBarFragment.newInstance())
-                //.addToBackStack(null)
-                .commitAllowingStateLoss();
 
-        //
 
-        //nacitame obsah zelaneho priecinku a pockame na vysledok
-        PathReader pathReader = new PathReader(showedDirectory);
-        pathReader.thread.join();
+        //nacitame obsah zelaneho priecinku (toto sa vykona v novom vlakne) a v dalsom vlakne pockame na vysledok, ktory nasledne zobrazime
+        final PathReader pathReader = new PathReader(showedDirectory);
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                //najprv zobrazime progress bar (ak uz je zobrazeny, tento krok preskocime)
+                if ( !(getSupportFragmentManager().findFragmentById(R.id.MainActivity_FrameLayout) instanceof ProgressBarFragment) ) {
+                    getSupportFragmentManager()
+                            .beginTransaction()
+                            .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                            .replace(R.id.MainActivity_FrameLayout, ProgressBarFragment.newInstance())
+                            //.addToBackStack(null)
+                            .commitAllowingStateLoss();
+                }
 
-        //ak existuje matersky priecinok, zobrazime sipku spat
-        if (showedDirectory.getParentFile() != null) { getSupportActionBar().setDisplayHomeAsUpEnabled(true); }
+                try {
+                    pathReader.thread.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                    return;
+                }
 
-        //zobrazime obsah priecinka
-        FileViewFragment fileViewFragment = FileViewFragment.newInstance(pathReader.pathContent);
-        getSupportFragmentManager()
-                .beginTransaction()
-                .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
-                .replace(R.id.MainActivity_FrameLayout, fileViewFragment)
-                .commitAllowingStateLoss();
+                //ak existuje matersky priecinok, zobrazime sipku spat
+                if (showedDirectory.getParentFile() != null) { getSupportActionBar().setDisplayHomeAsUpEnabled(true); }
+
+                //zobrazime obsah priecinka
+                FileViewFragment fileViewFragment = FileViewFragment.newInstance(pathReader.pathContent);
+                getSupportFragmentManager()
+                        .beginTransaction()
+                        .setCustomAnimations(R.anim.enter, R.anim.exit, R.anim.pop_enter, R.anim.pop_exit)
+                        .replace(R.id.MainActivity_FrameLayout, fileViewFragment)
+                        .commitAllowingStateLoss();
+            }
+        }).start();
+
+
 
     }
 
@@ -390,6 +407,15 @@ public class MainActivity extends AppCompatActivity implements FileViewFragment.
             for (int i = 0; i < filesCount; i++) {
                 pathContent[i + foldersCount] = files[i];
             }
+
+
+            //TODO: vymazat (simuluje dllhe citanie - test na spravne fungovanie vlaken)
+            try {
+                thread.sleep(2000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
 
         }
 
